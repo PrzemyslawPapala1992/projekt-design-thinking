@@ -1,0 +1,551 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Kampus+ – prototyp platformy e-learningowej</title>
+<style>
+/* ===== Zmienne kolorów (jasny / ciemny motyw) ===== */
+:root{
+  --bg:#f4f6fa; --surface:#ffffff; --surface2:#eef2f8; --text:#1b2333; --muted:#4f5b70;
+  --line:#d5dbe6; --primary:#1f3a68; --primary-ink:#ffffff; --link:#1f4f9a;
+  --accent:#a8470a; --accent-bg:#fdf0e6; --ok:#1d6b3a; --ok-bg:#e5f4ea; --warn:#8a5a00; --warn-bg:#fff4d6;
+  --danger:#a3202a; --danger-bg:#fbe8ea; --focus:#e07a16; --radius:10px;
+  font-family: system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;
+}
+@media (prefers-color-scheme: dark){
+  :root{
+    --bg:#0f1522; --surface:#18202f; --surface2:#222c3e; --text:#e6eaf2; --muted:#aab4c6;
+    --line:#33405a; --primary:#9dbbf0; --primary-ink:#0f1522; --link:#a9c6ff;
+    --accent:#f4b061; --accent-bg:#3a2a17; --ok:#7fd69c; --ok-bg:#183326; --warn:#f2cf6b; --warn-bg:#3a3214;
+    --danger:#ff9aa3; --danger-bg:#3d1c21; --focus:#f4b061;
+  }
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);line-height:1.5;font-size:16px}
+a{color:var(--link)}
+:focus-visible{outline:3px solid var(--focus);outline-offset:2px;border-radius:4px}
+h1,h2,h3{line-height:1.25;margin:.2em 0 .5em}
+h1{font-size:1.5rem} h2{font-size:1.2rem} h3{font-size:1.05rem}
+.sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+button,.btn{font:inherit;cursor:pointer;border:1px solid var(--line);background:var(--surface);color:var(--text);
+  padding:.45em .9em;border-radius:8px;text-decoration:none;display:inline-block}
+.btn-primary{background:var(--primary);color:var(--primary-ink);border-color:var(--primary)}
+.btn-small{padding:.25em .6em;font-size:.9rem}
+button[aria-pressed="true"]{background:var(--primary);color:var(--primary-ink);border-color:var(--primary)}
+input,textarea,select{font:inherit;color:var(--text);background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:.45em .6em}
+textarea{width:100%;min-height:80px}
+
+/* ===== Pasek sterowania prototypem ===== */
+.controls{display:flex;flex-wrap:wrap;gap:.75rem 1.25rem;align-items:center;padding:.6rem 1rem;background:var(--surface2);border-bottom:1px solid var(--line);font-size:.92rem}
+.controls .grp{display:flex;gap:.35rem;align-items:center}
+.controls .lbl{color:var(--muted);font-weight:600}
+
+/* ===== Ramka aplikacji i tryb telefonu ===== */
+.stage{padding:1rem}
+.app{max-width:1200px;margin:0 auto;background:var(--surface);border:1px solid var(--line);border-radius:14px;overflow:hidden;display:grid;grid-template-columns:230px 1fr;min-height:640px}
+body.phone .app{max-width:390px;border:10px solid #2a2f3a;border-radius:34px;min-height:760px}
+.topbar{grid-column:1/-1;display:flex;justify-content:space-between;align-items:center;padding:.7rem 1rem;background:var(--primary);color:var(--primary-ink)}
+.brand{font-weight:800;font-size:1.15rem;letter-spacing:.3px}
+.brand span{opacity:.85;font-weight:600}
+.user{font-size:.9rem}
+nav.side{border-right:1px solid var(--line);padding:.75rem .5rem;background:var(--surface)}
+nav.side a{display:block;padding:.5rem .7rem;border-radius:8px;color:var(--text);text-decoration:none;margin-bottom:2px}
+nav.side a[aria-current="page"]{background:var(--surface2);font-weight:700;box-shadow:inset 3px 0 0 var(--accent)}
+nav.side .badge{float:right}
+main{padding:1.1rem 1.3rem;min-width:0}
+/* układ kompaktowy: mały ekran lub tryb telefonu */
+.app.compact{grid-template-columns:1fr}
+.app.compact nav.side{display:flex;overflow-x:auto;border-right:0;border-bottom:1px solid var(--line);padding:.4rem;gap:.25rem}
+.app.compact nav.side a{white-space:nowrap;margin:0;font-size:.9rem}
+.app.compact nav.side a[aria-current="page"]{box-shadow:inset 0 -3px 0 var(--accent)}
+.app.compact main{padding:.9rem}
+.app.compact .grid{grid-template-columns:1fr}
+
+/* ===== Komponenty ===== */
+.card{border:1px solid var(--line);border-radius:var(--radius);padding:.9rem 1rem;background:var(--surface);margin-bottom:.8rem}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:.8rem}
+.muted{color:var(--muted)}
+.badge{display:inline-block;font-size:.78rem;font-weight:700;padding:.1em .55em;border-radius:999px;background:var(--surface2);color:var(--text);border:1px solid var(--line)}
+.b-accent{background:var(--accent-bg);color:var(--accent);border-color:transparent}
+.b-ok{background:var(--ok-bg);color:var(--ok);border-color:transparent}
+.b-warn{background:var(--warn-bg);color:var(--warn);border-color:transparent}
+.b-danger{background:var(--danger-bg);color:var(--danger);border-color:transparent}
+.dot{display:inline-block;width:.7em;height:.7em;border-radius:50%;margin-right:.4em;vertical-align:middle}
+.tl-group h2{font-size:1rem;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);margin-top:1rem}
+.tl-item{display:flex;gap:.8rem;align-items:flex-start;border:1px solid var(--line);border-radius:var(--radius);padding:.65rem .8rem;margin-bottom:.5rem;background:var(--surface)}
+.tl-time{min-width:84px;font-weight:700;font-variant-numeric:tabular-nums}
+.tl-body{flex:1;min-width:0}
+.tl-body a{font-weight:600}
+.progress{height:8px;background:var(--surface2);border-radius:99px;overflow:hidden;border:1px solid var(--line)}
+.progress>span{display:block;height:100%;background:var(--primary)}
+.tabs{display:flex;gap:.3rem;flex-wrap:wrap;border-bottom:1px solid var(--line);margin:.5rem 0 1rem}
+.tabs a{padding:.45rem .8rem;text-decoration:none;color:var(--text);border-radius:8px 8px 0 0}
+.tabs a[aria-current="page"]{font-weight:700;box-shadow:inset 0 -3px 0 var(--accent)}
+.lesson{display:flex;justify-content:space-between;gap:.6rem;align-items:center;flex-wrap:wrap;padding:.55rem 0;border-top:1px solid var(--line)}
+.tags{display:flex;gap:.3rem;flex-wrap:wrap}
+table{border-collapse:collapse;width:100%}
+th,td{text-align:left;padding:.45rem .5rem;border-bottom:1px solid var(--line)}
+.drop{border:2px dashed var(--line);border-radius:var(--radius);padding:1.2rem;text-align:center}
+.bar-row{display:grid;grid-template-columns:150px 1fr 48px;gap:.5rem;align-items:center;margin:.35rem 0}
+.bar{height:14px;background:var(--surface2);border-radius:4px;overflow:hidden}
+.bar>span{display:block;height:100%;background:var(--primary)}
+.chips{display:flex;gap:.4rem;flex-wrap:wrap;margin:.5rem 0}
+.chat{max-height:340px;overflow:auto;padding:.5rem;background:var(--surface2);border-radius:var(--radius)}
+.msg{padding:.5rem .75rem;border-radius:10px;margin:.35rem 0;max-width:85%}
+.msg.me{margin-left:auto;background:var(--primary);color:var(--primary-ink)}
+.msg.bot{background:var(--surface);border:1px solid var(--line)}
+footer{text-align:center;color:var(--muted);font-size:.85rem;padding:1rem}
+footer strong{color:var(--accent)}
+#toast{position:fixed;left:50%;top:1rem;transform:translateX(-50%);background:var(--text);color:var(--bg);padding:.6rem 1rem;border-radius:8px;display:none;z-index:50;max-width:90vw}
+
+/* ===== Panel moderatora testów ===== */
+#testpanel{position:fixed;right:1rem;bottom:1rem;width:330px;max-width:calc(100vw - 2rem);background:var(--surface);border:2px solid var(--accent);border-radius:12px;z-index:40;font-size:.9rem;box-shadow:0 6px 24px rgba(0,0,0,.18)}
+#testpanel summary{padding:.55rem .8rem;font-weight:700;cursor:pointer;color:var(--accent)}
+#testpanel .inner{padding:0 .8rem .8rem;max-height:60vh;overflow:auto}
+.trow{border-top:1px solid var(--line);padding:.45rem 0}
+.trow .acts{display:flex;gap:.3rem;margin-top:.3rem;align-items:center;flex-wrap:wrap}
+.timer{font-variant-numeric:tabular-nums;font-weight:700}
+</style>
+</head>
+<body>
+<a href="#main" class="sr-only">Przejdź do treści</a>
+
+<!-- Pasek sterowania prototypem (nie jest częścią projektowanego interfejsu) -->
+<div class="controls" role="region" aria-label="Ustawienia prototypu">
+  <div class="grp" role="group" aria-label="Wariant pulpitu">
+    <span class="lbl">Wariant:</span>
+    <button data-variant="A" aria-pressed="true">A · Oś czasu</button>
+    <button data-variant="B" aria-pressed="false">B · Kafelki kursów</button>
+  </div>
+  <div class="grp" role="group" aria-label="Rola użytkownika">
+    <span class="lbl">Rola:</span>
+    <button data-role="student" aria-pressed="true">Student</button>
+    <button data-role="teacher" aria-pressed="false">Prowadzący</button>
+  </div>
+  <div class="grp">
+    <span class="lbl">Widok:</span>
+    <button id="phoneBtn" aria-pressed="false">📱 Telefon</button>
+  </div>
+  <div class="grp"><button id="resetBtn" class="btn-small" title="Czyści oddane zadania, ustawienia i odpowiedzi (nie wyniki testów)">Reset danych</button></div>
+</div>
+
+<div class="stage">
+  <div class="app" id="app">
+    <header class="topbar">
+      <div class="brand">Kampus+ <span>· WST</span></div>
+      <div class="user" id="userBox"></div>
+    </header>
+    <nav class="side" id="nav" aria-label="Menu główne"></nav>
+    <main id="main" tabindex="-1"></main>
+  </div>
+</div>
+
+<footer><strong>Prototyp do testów użyteczności – dane fikcyjne.</strong> Projekt Design Thinking, temat 7: Platforma e-learningowa dla uczelni wyższej.</footer>
+
+<div id="toast" role="status" aria-live="polite"></div>
+
+<!-- Panel moderatora: zadania testowe i pomiar czasu -->
+<details id="testpanel">
+  <summary>🧪 Zadanie testowe (moderator)</summary>
+  <div class="inner">
+    <label>Uczestnik: <input id="participant" size="6" value="U1" aria-label="Identyfikator uczestnika"></label>
+    <span class="muted" id="tpVariant"></span>
+    <div id="tasks"></div>
+    <p class="muted" id="tpCount"></p>
+    <button id="exportCsv" class="btn-primary btn-small">Eksport CSV</button>
+    <button id="clearRes" class="btn-small">Wyczyść wyniki</button>
+  </div>
+</details>
+
+<script>
+"use strict";
+/* ===== Data „dzisiejsza” prototypu – stała, by testy były powtarzalne ===== */
+const TODAY = new Date(2026, 10, 26, 9, 0); // czwartek 26.11.2026, 9:00
+const DNI = ["nd","pn","wt","śr","cz","pt","sb"];
+
+/* ===== Dane przykładowe (fikcyjne) ===== */
+const COURSES = [
+  { id:"dt", name:"Techniki Design Thinking", teacher:"dr Anna Nowak", color:"#c2410c", progress:62,
+    syllabus:"Proces DT w 5 etapach: empatia, definiowanie, ideacja, prototyp, testowanie. Projekt zespołowy na wybrany temat.",
+    rules:["Projekt zespołowy – 60 pkt","Aktywność na zajęciach – 20 pkt","Raport z sesji ideacji – 20 pkt","Próg zaliczenia: 51/100 pkt"],
+    weeks:[
+      {n:1,title:"Czym jest Design Thinking",lessons:[["Założenia DT i human-centered design",6],["5 etapów pracy zespołu",8]]},
+      {n:2,title:"Empatia",lessons:[["Wywiad i „przechwytywanie klientów”",9],["Mapa empatii krok po kroku",7]]},
+      {n:3,title:"Ideacja",lessons:[["Burza mózgów i metoda 635",7],["TRIZ w 8 minut",8],["Matryca wpływu i wysiłku",5]]},
+      {n:4,title:"Prototyp i testy",lessons:[["Prototyp low-fi w godzinę",10],["Test zadaniowy z użytkownikiem",9]]}],
+    grades:[["Aktywność (do tej pory)",14,15],["Raport z sesji 635",null,20],["Projekt – etap 1",22,25]], maxTotal:100, threshold:51 },
+  { id:"bd", name:"Bazy danych", teacher:"dr inż. Piotr Lis", color:"#1f6fb5", progress:48,
+    syllabus:"Modelowanie ERD, SQL, normalizacja, transakcje.", rules:["Projekt ERD – 40 pkt","Kolokwium SQL – 40 pkt","Laboratoria – 20 pkt","Próg zaliczenia: 51/100 pkt"],
+    weeks:[{n:1,title:"Model relacyjny",lessons:[["Relacje i klucze",8]]},{n:2,title:"ERD",lessons:[["Diagram ERD w praktyce",9]]},{n:3,title:"SQL",lessons:[["SELECT i JOIN",10]]}],
+    grades:[["Laboratoria",15,20],["Projekt ERD – etap 1",16,20]], maxTotal:100, threshold:51 },
+  { id:"po", name:"Programowanie obiektowe", teacher:"mgr inż. Tomasz Wrona", color:"#2f7d4a", progress:55,
+    syllabus:"Klasy, dziedziczenie, interfejsy, wzorce projektowe.", rules:["Laboratoria – 50 pkt","Projekt – 50 pkt","Próg zaliczenia: 51/100 pkt"],
+    weeks:[{n:1,title:"Klasy i obiekty",lessons:[["Hermetyzacja",7]]},{n:2,title:"Dziedziczenie",lessons:[["Polimorfizm w 6 minut",6]]},{n:3,title:"Wzorce",lessons:[["Strategia i Obserwator",9]]}],
+    grades:[["Laboratoria 1–6",30,36]], maxTotal:100, threshold:51 },
+  { id:"sk", name:"Sieci komputerowe", teacher:"dr Marek Zieliński", color:"#6b3fa0", progress:40,
+    syllabus:"Model OSI/TCP-IP, adresacja, VLAN, routing.", rules:["Laboratoria – 60 pkt","Kolokwium – 40 pkt","Próg zaliczenia: 51/100 pkt"],
+    weeks:[{n:1,title:"Model OSI",lessons:[["Warstwy w pigułce",8]]},{n:2,title:"Adresacja IP",lessons:[["Podsieci bez stresu",10]]},{n:3,title:"VLAN",lessons:[["VLAN w Packet Tracer",9]]}],
+    grades:[["Laboratoria 1–4",20,30],["Laboratoria 5–7",14,30]], maxTotal:100, threshold:51 },
+  { id:"en", name:"Język angielski B2", teacher:"mgr Joanna Kowal", color:"#8a5a00", progress:70,
+    syllabus:"Academic writing, presentations, IT vocabulary.", rules:["Essay – 30 pkt","Presentation – 30 pkt","Tests – 40 pkt","Próg zaliczenia: 60/100 pkt"],
+    weeks:[{n:1,title:"Academic writing",lessons:[["Essay structure",7]]},{n:2,title:"Presenting",lessons:[["Signposting phrases",5]]}],
+    grades:[["Test 1",17,20]], maxTotal:100, threshold:60 }
+];
+/* Zadania i wydarzenia (type: task – do oddania, event – zajęcia/kolokwium, info – komunikat) */
+const ITEMS = [
+  {id:"dt1",course:"dt",type:"task",title:"Mapa empatii – persona studenta",due:new Date(2026,10,26,23,59),pts:10,desc:"Przygotuj mapę empatii dla jednej persony (myśli i czuje, widzi, słyszy, mówi i robi, bolączki, korzyści). Format: PDF lub zdjęcie tablicy."},
+  {id:"ev1",course:"bd",type:"event",title:"Laboratorium – sala 212",due:new Date(2026,10,26,12,0)},
+  {id:"ev2",course:"dt",type:"event",title:"Ćwiczenia – sala 204 (sesja 635)",due:new Date(2026,10,26,16,0)},
+  {id:"bd1",course:"bd",type:"task",title:"Projekt ERD – etap 2",due:new Date(2026,10,27,12,0),pts:20,desc:"Uzupełnij diagram ERD o encje Zamówienie i Płatność, dodaj klucze obce i krótki opis normalizacji (do 1 strony)."},
+  {id:"in1",course:"sk",type:"info",title:"Zmiana sali: zajęcia przeniesione do s. 112",due:new Date(2026,10,27,8,0)},
+  {id:"sk1",course:"sk",type:"task",title:"Lab 8 – VLAN w Packet Tracer",due:new Date(2026,10,28,20,0),pts:10,desc:"Skonfiguruj 3 VLAN-y i trunk między przełącznikami. Oddaj plik .pkt i zrzut ekranu tablicy VLAN."},
+  {id:"po1",course:"po",type:"task",title:"Lab 7 – wzorce projektowe",due:new Date(2026,10,29,23,59),pts:6,desc:"Zaimplementuj wzorzec Strategia dla kalkulatora rabatów. Repozytorium lub archiwum ZIP."},
+  {id:"en1",course:"en",type:"task",title:"Essay – Technology at university",due:new Date(2026,11,1,23,59),pts:30,desc:"250–300 words, opinion essay."},
+  {id:"dt2",course:"dt",type:"task",title:"Raport z sesji 635",due:new Date(2026,11,3,23,59),pts:20,desc:"Opis przebiegu sesji, lista pomysłów i wybór 3 najlepszych z uzasadnieniem."},
+  {id:"sk2",course:"sk",type:"event",title:"Kolokwium – sala 112",due:new Date(2026,11,8,10,15)},
+  {id:"bd2",course:"bd",type:"event",title:"Kolokwium SQL – sala 212",due:new Date(2026,11,10,12,0)},
+  {id:"en2",course:"en",type:"task",title:"Oral presentation",due:new Date(2026,11,12,9,0),pts:30,desc:"5-minute talk on an IT topic."},
+  {id:"po2",course:"po",type:"task",title:"Projekt – iteracja 1",due:new Date(2026,11,14,23,59),pts:25,desc:"Diagram klas + działający szkielet aplikacji."}
+];
+const QA = {
+  dt:[["Czy raport z 635 może być zespołowy?","Tak, jeden raport na zespół, podpisany przez wszystkich członków. – dr A. Nowak"],["Gdzie są slajdy z wykładu 3?","W zakładce Tygodnie → Tydzień 3, pod mikrolekcjami."]],
+  bd:[["Czy ERD można zrobić w draw.io?","Tak, dowolne narzędzie, oddajemy PDF."]],
+  po:[], sk:[["Czy Lab 8 można oddać w parach?","Nie, oddajemy indywidualnie."]], en:[]
+};
+const FAQ = [
+  {k:["poprawk","popraw","sesja popraw"],q:"Kiedy sesja poprawkowa?",a:"Sesja poprawkowa zimowa: 8–14 lutego 2027. Terminy poszczególnych egzaminów pojawią się w zakładce kursu i na Twoim pulpicie do 25 stycznia."},
+  {k:["legitymac"],q:"Jak przedłużyć legitymację?",a:"Hologram naklejasz w dziekanacie (pok. 105, pn–pt 9:00–14:00) albo w automacie w holu A. Potrzebna jest opłata za semestr."},
+  {k:["stypend"],q:"Do kiedy wniosek o stypendium?",a:"Wnioski o stypendium rektora i socjalne – do 10 grudnia 2026 przez zakładkę Wnioski w USOS."},
+  {k:["urlop","dziekańsk"],q:"Jak wziąć urlop dziekański?",a:"Złóż podanie do dziekana z uzasadnieniem (wzór w Dokumentach). Decyzja w ciągu 14 dni."},
+  {k:["nieobecno","usprawiedliw","chor"],q:"Jak usprawiedliwić nieobecność?",a:"Prześlij zwolnienie do prowadzącego przez Q&A kursu w ciągu 7 dni. Limit nieobecności podany jest w warunkach zaliczenia każdego kursu."}
+];
+const SUBMISSIONS_T = [
+  {id:"s1",student:"Kasia Wiśniewska",task:"Mapa empatii – persona studenta",when:"26.11, 08:12"},
+  {id:"s2",student:"Jakub Mazur",task:"Mapa empatii – persona studenta",when:"25.11, 22:40"},
+  {id:"s3",student:"Natalia Krawczyk",task:"Mapa empatii – persona studenta",when:"25.11, 19:03"},
+  {id:"s4",student:"Zespół 3 (4 os.)",task:"Projekt – etap 1",when:"24.11, 17:55"}
+];
+const RUBRIC = [["Zrozumienie użytkownika (głębia wglądów)",4],["Kompletność 6 obszarów mapy",3],["Czytelność i forma",3]];
+
+/* ===== Stan zapisywany w localStorage ===== */
+const KEY = "kampusplus_state_v1", RKEY = "kampusplus_tests_v1";
+const defaultState = () => ({variant:"A",role:"student",phone:false,submitted:{po0:true},offline:{},notif:"digest",
+  booked:null,pulse:null,qa:{},chat:[],graded:{},copied:false});
+let S = Object.assign(defaultState(), JSON.parse(localStorage.getItem(KEY) || "{}"));
+const save = () => localStorage.setItem(KEY, JSON.stringify(S));
+let RESULTS = JSON.parse(localStorage.getItem(RKEY) || "[]");
+
+/* ===== Pomocnicze ===== */
+const $ = s => document.querySelector(s);
+const esc = s => String(s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const pad = n => String(n).padStart(2,"0");
+const hm = d => pad(d.getHours())+":"+pad(d.getMinutes());
+const fmt = d => `${DNI[d.getDay()]} ${pad(d.getDate())}.${pad(d.getMonth()+1)}, ${hm(d)}`;
+const course = id => COURSES.find(c => c.id === id);
+const dayDiff = d => Math.round((new Date(d.getFullYear(),d.getMonth(),d.getDate()) - new Date(TODAY.getFullYear(),TODAY.getMonth(),TODAY.getDate()))/864e5);
+function toast(msg){ const t=$("#toast"); t.textContent=msg; t.style.display="block"; clearTimeout(toast.h); toast.h=setTimeout(()=>t.style.display="none",3500); }
+function hoursLeft(d){ return (d - TODAY)/36e5; }
+function dueBadge(it){
+  if(it.type!=="task") return it.type==="info" ? '<span class="badge b-warn">komunikat</span>' : '<span class="badge">zajęcia</span>';
+  if(S.submitted[it.id]) return '<span class="badge b-ok">✓ oddane</span>';
+  const h = hoursLeft(it.due);
+  if(h < 0) return '<span class="badge b-danger">po terminie</span>';
+  if(h < 48) return `<span class="badge b-accent">zostało ${Math.max(1,Math.round(h))} h</span>`;
+  return '<span class="badge">do oddania</span>';
+}
+function gradeFrom(pct){ return pct>=91?"5,0":pct>=81?"4,5":pct>=71?"4,0":pct>=61?"3,5":pct>=51?"3,0":"2,0"; }
+function courseStats(c){
+  const done = c.grades.filter(g=>g[1]!==null);
+  const earned = done.reduce((a,g)=>a+g[1],0), possible = done.reduce((a,g)=>a+g[2],0);
+  const pct = possible ? earned/possible*100 : 0;
+  return {earned, possible, left:c.maxTotal-possible, missing:Math.max(0,c.threshold-earned), pct, predicted:gradeFrom(pct)};
+}
+function download(name, text){
+  const blob = new Blob(["﻿"+text], {type:"text/csv;charset=utf-8"});
+  const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = name;
+  document.body.appendChild(a); a.click(); a.remove();
+}
+
+/* ===== Nawigacja ===== */
+const NAV_S = [["#/pulpit","🏠 Pulpit"],["#/kursy","📚 Kursy"],["#/oceny","📊 Oceny"],["#/powiadomienia","🔔 Powiadomienia"],["#/mentor","🤝 Mentor"],["#/asystent","💬 Pytania i FAQ"],["#/puls","📝 Puls tygodnia"]];
+const NAV_T = [["#/p/kursy","📚 Moje kursy"],["#/p/ocenianie","✅ Do oceny"],["#/p/puls","📈 Puls kursu"]];
+function renderNav(){
+  const list = S.role==="student" ? NAV_S : NAV_T, h = location.hash || "";
+  $("#nav").innerHTML = list.map(([href,label]) => {
+    const cur = h.startsWith(href) || (href==="#/kursy" && h.startsWith("#/kurs/")) ? ' aria-current="page"' : "";
+    let badge = "";
+    if(href==="#/powiadomienia"){ const n = ITEMS.filter(i=>i.type==="task"&&!S.submitted[i.id]&&hoursLeft(i.due)<48&&hoursLeft(i.due)>0).length; if(n) badge=`<span class="badge b-accent" aria-label="${n} pilne">${n}</span>`; }
+    if(href==="#/p/ocenianie"){ const n = SUBMISSIONS_T.filter(s=>!S.graded[s.id]).length; if(n) badge=`<span class="badge b-accent">${n}</span>`; }
+    return `<a href="${href}"${cur}>${label}${badge}</a>`;
+  }).join("");
+  $("#userBox").textContent = S.role==="student" ? "Kasia Wiśniewska · Informatyka, II rok" : "dr Anna Nowak · prowadząca";
+}
+
+/* ===== Ekrany studenta ===== */
+function viewPulpit(){
+  const urgent = ITEMS.filter(i=>i.type==="task"&&!S.submitted[i.id]&&dayDiff(i.due)>=0&&dayDiff(i.due)<=(7-TODAY.getDay())%7);
+  let html = `<h1>Dzień dobry, Kasia</h1><p class="muted">Dziś: czwartek 26.11.2026 · w tym tygodniu do oddania: <strong>${urgent.length}</strong></p>`;
+  if(S.variant==="A"){
+    const groups = [["Zaległe",d=>d<0],["Dziś",d=>d===0],["Jutro",d=>d===1],["Ten tydzień",d=>d>1&&d<=(7-TODAY.getDay())%7],["Później",d=>d>(7-TODAY.getDay())%7]];
+    const sorted = [...ITEMS].sort((a,b)=>a.due-b.due);
+    for(const [name,test] of groups){
+      const its = sorted.filter(i=>test(dayDiff(i.due)) && !(name==="Zaległe" && (i.type!=="task"||S.submitted[i.id])));
+      if(!its.length) continue;
+      html += `<section class="tl-group" aria-label="${name}"><h2>${name}</h2>` + its.map(it=>{
+        const c = course(it.course);
+        const time = name==="Dziś"||name==="Jutro" ? hm(it.due) : `${DNI[it.due.getDay()]} ${pad(it.due.getDate())}.${pad(it.due.getMonth()+1)}`;
+        const title = it.type==="task" ? `<a href="#/zadanie/${it.id}">${esc(it.title)}</a>` : `<strong>${esc(it.title)}</strong>`;
+        return `<div class="tl-item"><div class="tl-time">${time}</div><div class="tl-body">${title}<br><span class="muted"><span class="dot" style="background:${c.color}" aria-hidden="true"></span><a href="#/kurs/${c.id}/tygodnie">${esc(c.name)}</a></span></div><div>${dueBadge(it)}</div></div>`;
+      }).join("") + `</section>`;
+    }
+  } else {
+    html += `<div class="grid">` + COURSES.map(c=>{
+      const open = ITEMS.filter(i=>i.course===c.id&&i.type==="task"&&!S.submitted[i.id]).sort((a,b)=>a.due-b.due);
+      const next = open[0];
+      return `<div class="card" style="border-top:5px solid ${c.color}"><h2><a href="#/kurs/${c.id}/tygodnie">${esc(c.name)}</a></h2>
+        <p class="muted">${esc(c.teacher)}</p>
+        <p><span class="badge ${open.length?"b-accent":"b-ok"}">${open.length} do oddania</span></p>
+        <p class="muted">${next?`Najbliższy termin: <a href="#/zadanie/${next.id}">${esc(next.title)}</a> – ${fmt(next.due)}`:"Brak otwartych zadań"}</p>
+        <div class="progress" role="progressbar" aria-valuenow="${c.progress}" aria-valuemin="0" aria-valuemax="100" aria-label="Postęp kursu"><span style="width:${c.progress}%"></span></div>
+        <p class="muted" style="margin:.3rem 0 0">Postęp: ${c.progress}%</p></div>`;
+    }).join("") + `</div>`;
+  }
+  html += `<p class="muted" style="margin-top:1rem">📅 <button class="btn-small" onclick="toast('Skopiowano link do kalendarza (iCal) – terminy zsynchronizują się z Google/Outlook.')">Dodaj terminy do mojego kalendarza</button></p>`;
+  return html;
+}
+function viewKursy(){
+  return `<h1>Kursy – semestr zimowy 2026/27</h1>` + COURSES.map(c=>`<div class="card"><h2><span class="dot" style="background:${c.color}" aria-hidden="true"></span><a href="#/kurs/${c.id}/tygodnie">${esc(c.name)}</a></h2><p class="muted">${esc(c.teacher)} · postęp ${c.progress}%</p></div>`).join("");
+}
+function viewKurs(id, tab){
+  const c = course(id); if(!c) return "<h1>Nie znaleziono kursu</h1>";
+  tab = tab || "tygodnie";
+  const tabs = [["sylabus","Sylabus i zaliczenie"],["tygodnie","Tygodnie"],["zadania","Zadania"],["oceny","Oceny"],["qa","Q&A"]];
+  let html = `<p class="muted"><a href="#/kursy">Kursy</a> › ${esc(c.name)}</p><h1>${esc(c.name)}</h1><p class="muted">${esc(c.teacher)}</p>
+    <nav class="tabs" aria-label="Sekcje kursu">${tabs.map(([k,l])=>`<a href="#/kurs/${id}/${k}"${k===tab?' aria-current="page"':""}>${l}</a>`).join("")}</nav>`;
+  if(tab==="sylabus"){
+    html += `<div class="card"><h2>O kursie</h2><p>${esc(c.syllabus)}</p><h3>Warunki zaliczenia</h3><ul>${c.rules.map(r=>`<li>${esc(r)}</li>`).join("")}</ul></div>`;
+  } else if(tab==="tygodnie"){
+    html += c.weeks.map(w=>`<div class="card"><h2>Tydzień ${w.n}: ${esc(w.title)}</h2>` + w.lessons.map(([t,min],i)=>{
+      const key = `${id}-${w.n}-${i}`, off = S.offline[key];
+      return `<div class="lesson"><div>▶️ <strong>${esc(t)}</strong> <span class="muted">· ${min} min</span><div class="tags"><span class="badge">📄 transkrypcja</span><span class="badge">CC napisy</span>${off?'<span class="badge b-ok">✓ dostępne offline</span>':""}</div></div>
+        <button class="btn-small" data-offline="${key}" aria-label="Pobierz offline: ${esc(t)}">${off?"Usuń z offline":"⬇ Pobierz offline"}</button></div>`;
+    }).join("") + `</div>`).join("");
+  } else if(tab==="zadania"){
+    const its = ITEMS.filter(i=>i.course===id&&i.type==="task").sort((a,b)=>a.due-b.due);
+    html += its.length ? its.map(it=>`<div class="tl-item"><div class="tl-body"><a href="#/zadanie/${it.id}">${esc(it.title)}</a><br><span class="muted">Termin: ${fmt(it.due)} · ${it.pts} pkt</span></div>${dueBadge(it)}</div>`).join("") : "<p>Brak zadań.</p>";
+  } else if(tab==="oceny"){
+    html += gradeCard(c);
+  } else if(tab==="qa"){
+    const list = (QA[id]||[]).concat((S.qa[id]||[]).map(q=>[q,"⏳ Czeka na odpowiedź prowadzącego (zwykle do 24 h)."]));
+    html += `<div class="card"><h2>Zadaj pytanie</h2><p class="muted">Pytanie i odpowiedź zobaczą wszyscy uczestnicy kursu – nikt nie musi pytać dwa razy.</p>
+      <label for="qaIn" class="sr-only">Treść pytania</label><textarea id="qaIn" placeholder="Np. Czy można oddać zadanie w formacie DOCX?"></textarea>
+      <p><button class="btn-primary" data-ask="${id}">Wyślij pytanie</button></p></div>` +
+      (list.length ? list.map(([q,a])=>`<div class="card"><strong>❓ ${esc(q)}</strong><p>${esc(a)}</p></div>`).join("") : "<p class='muted'>Brak pytań.</p>");
+  }
+  return html;
+}
+function gradeCard(c){
+  const st = courseStats(c);
+  const rows = c.grades.map(g=>`<tr><td>${esc(g[0])}</td><td>${g[1]===null?'<span class="muted">—</span>':g[1]}</td><td>${g[2]}</td></tr>`).join("");
+  const status = st.missing===0 ? `<span class="badge b-ok">Próg zaliczenia osiągnięty</span>` : `<span class="badge b-accent">Brakuje ${st.missing} pkt do zaliczenia</span>`;
+  return `<div class="card"><h2>${esc(c.name)}</h2>
+    <p>${status} <span class="muted">· próg ${c.threshold}/${c.maxTotal} pkt · zdobyte ${st.earned} pkt · do zdobycia jeszcze ${st.left} pkt</span></p>
+    <div class="progress" role="progressbar" aria-valuenow="${st.earned}" aria-valuemin="0" aria-valuemax="${c.maxTotal}" aria-label="Punkty"><span style="width:${st.earned/c.maxTotal*100}%"></span></div>
+    <p><strong>Przewidywana ocena końcowa: ${st.predicted}</strong> <span class="muted">(przy obecnej skuteczności ${Math.round(st.pct)}% zdobytych punktów)</span></p>
+    <table><caption class="sr-only">Składowe oceny</caption><thead><tr><th>Składowa</th><th>Punkty</th><th>Maks.</th></tr></thead><tbody>${rows}</tbody></table></div>`;
+}
+function viewOceny(){ return `<h1>Oceny i postęp</h1><p class="muted">Przewidywana ocena to szacunek – zakłada, że utrzymasz obecny procent zdobywanych punktów.</p>` + COURSES.map(gradeCard).join(""); }
+function viewZadanie(id){
+  const it = ITEMS.find(i=>i.id===id); if(!it) return "<h1>Nie znaleziono zadania</h1>";
+  const c = course(it.course), sub = S.submitted[id];
+  return `<p class="muted"><a href="#/kurs/${c.id}/zadania">${esc(c.name)}</a> › Zadanie</p><h1>${esc(it.title)}</h1>
+    <p>${dueBadge(it)} <span class="muted">Termin: ${fmt(it.due)} · ${it.pts} pkt</span></p>
+    <div class="card"><h2>Polecenie</h2><p>${esc(it.desc)}</p></div>
+    <div class="card"><h2>Oddanie pracy</h2>${sub && sub!==true ? `<p class="badge b-ok">✓ Oddano ${esc(sub.time)} – plik „${esc(sub.file)}”</p><p class="muted">Potwierdzenie wysłaliśmy też na e-mail uczelniany. Możesz podmienić plik do terminu.</p>` : ""}
+      <div class="drop"><p>Przeciągnij plik tutaj lub wybierz z dysku</p>
+      <label class="btn" for="fileIn">📎 Wybierz plik</label><input type="file" id="fileIn" class="sr-only">
+      <p id="fileName" class="muted"></p><progress id="upl" max="100" value="0" style="width:100%;display:none" aria-label="Postęp wysyłania"></progress></div>
+      <p><button class="btn-primary" id="sendBtn" data-task="${id}">${sub?"Podmień plik":"Oddaj zadanie"}</button></p></div>`;
+}
+function viewPowiadomienia(){
+  const opts = [["digest","Dzienne podsumowanie o 7:00 + push tylko, gdy do terminu zostało mniej niż 48 h (zalecane)"],["all","Wszystko od razu (każdy komunikat i zmiana)"],["daily","Tylko dzienne podsumowanie o 7:00"]];
+  const urgent = ITEMS.filter(i=>i.type==="task"&&!S.submitted[i.id]&&hoursLeft(i.due)>0&&hoursLeft(i.due)<48);
+  return `<h1>Powiadomienia</h1>
+    <div class="card"><h2>Pilne (mniej niż 48 h)</h2>${urgent.length?urgent.map(i=>`<p>⏰ <a href="#/zadanie/${i.id}">${esc(i.title)}</a> – ${esc(course(i.course).name)}, ${fmt(i.due)}</p>`).join(""):"<p>Nic pilnego 🎉</p>"}
+    <p>📢 Sieci komputerowe: zmiana sali na 112 (pt 27.11)</p></div>
+    <div class="card"><h2>Podsumowanie z dziś, 7:00</h2><p>Dziś: 2 zajęcia, 1 termin (Mapa empatii, 23:59). Jutro: termin Projekt ERD – etap 2 (12:00). 1 nowa odpowiedź w Q&A Design Thinking.</p></div>
+    <fieldset class="card"><legend><strong>Jak mamy Cię powiadamiać?</strong></legend>
+      ${opts.map(([v,l])=>`<p><label><input type="radio" name="notif" value="${v}"${S.notif===v?" checked":""}> ${l}</label></p>`).join("")}
+      <p class="muted">Zamiast ciągłego strumienia – powiadomienia „impulsowe”: jedno podsumowanie dziennie i alarm tylko wtedy, gdy naprawdę trzeba (TRIZ, zasada 19 – działania impulsowe).</p></fieldset>`;
+}
+function viewMentor(){
+  const slots = ["pn 30.11, 18:00","wt 1.12, 12:15","śr 2.12, 19:30"];
+  return `<h1>Mentor rówieśniczy</h1><p class="muted">Student starszego roku pomaga w sprawach nauki i odnalezienia się na uczelni. Rozmowa jest poufna.</p>
+    <div class="card"><h2>Ola Lewandowska</h2><p class="muted">III rok Informatyki · mentorka grupy 2A · odpowiada zwykle w ciągu dnia</p>
+      <div class="tags"><span class="badge">Bazy danych</span><span class="badge">Programowanie obiektowe</span><span class="badge">organizacja czasu</span><span class="badge">studia + praca</span></div>
+      ${S.booked?`<p class="badge b-ok" style="margin-top:.8rem">✓ Umówiono: ${esc(S.booked)} (15 min, online). Link do spotkania przyjdzie dzień wcześniej.</p>`:""}
+      <h3 style="margin-top:1rem">Umów 15 min</h3><div class="chips">${slots.map(s=>`<button data-slot="${s}">${s}</button>`).join("")}</div></div>
+    <div class="card"><h2>Potrzebujesz innego wsparcia?</h2><p>Konsultacje z psychologiem akademickim – bezpłatnie, zapisy online.</p></div>`;
+}
+function viewAsystent(){
+  const chat = S.chat.length ? S.chat : [["bot","Cześć! Odpowiadam na pytania o organizację studiów. Jeśli nie znam odpowiedzi, przekażę pytanie do dziekanatu lub prowadzącego."]];
+  return `<h1>Pytania i FAQ dziekanatu</h1>
+    <div class="chat" id="chat" aria-live="polite">${chat.map(([w,t])=>`<div class="msg ${w==="me"?"me":"bot"}">${esc(t)}</div>`).join("")}</div>
+    <p class="muted">Częste pytania:</p><div class="chips">${FAQ.map((f,i)=>`<button class="btn-small" data-faq="${i}">${esc(f.q)}</button>`).join("")}</div>
+    <form id="askForm"><label for="askIn" class="sr-only">Twoje pytanie</label><input id="askIn" style="width:70%" placeholder="Napisz pytanie…"> <button class="btn-primary">Wyślij</button></form>`;
+}
+function viewPuls(){
+  if(S.pulse) return `<h1>Puls tygodnia</h1><div class="card"><p class="badge b-ok">✓ Dziękujemy! Odpowiedź wysłana anonimowo.</p><p class="muted">Prowadzący widzą tylko zbiorcze wyniki. Wyniki z poprzedniego tygodnia: materiał oceniono średnio na 4,1/5, a prowadząca dodała nagranie z ćwiczeń, o które prosiliście.</p></div>`;
+  return `<h1>Puls tygodnia – Techniki Design Thinking</h1><p class="muted">3 pytania, ok. 30 sekund. Anonimowo.</p>
+    <form id="pulseForm" class="card">
+      <fieldset><legend>1. Jak zrozumiały był materiał w tym tygodniu?</legend><div class="chips">${[1,2,3,4,5].map(n=>`<label><input type="radio" name="p1" value="${n}" required> ${n}</label>`).join("")}</div><span class="muted">1 – zupełnie niezrozumiały, 5 – w pełni zrozumiały</span></fieldset>
+      <fieldset><legend>2. Ile czasu zajęła Ci nauka do tego kursu w tym tygodniu?</legend><select name="p2" aria-label="Czas nauki"><option>mniej niż 1 h</option><option>1–3 h</option><option>3–5 h</option><option>ponad 5 h</option></select></fieldset>
+      <fieldset><legend>3. Jedna rzecz, którą warto poprawić:</legend><textarea name="p3" aria-label="Sugestia"></textarea></fieldset>
+      <p><button class="btn-primary">Wyślij anonimowo</button></p></form>`;
+}
+
+/* ===== Ekrany prowadzącego ===== */
+function viewPKursy(){
+  return `<h1>Moje kursy</h1>
+    <div class="card"><h2>Techniki Design Thinking · gr. 2A, 2B</h2><p class="muted">58 studentów · 4 z 14 tygodni opublikowane</p>
+      ${S.copied?`<p class="badge b-ok">✓ Skopiowano z semestru zimowego 2025/26: 14 tygodni, 9 zadań, 120 pytań z banku. Terminy przesunięto o rok – sprawdź je przed publikacją.</p>`:""}
+      <p><button class="btn-primary" id="copyBtn">⧉ Skopiuj kurs z poprzedniego semestru</button> <a class="btn" href="#/p/ocenianie">Zadania do oceny</a> <a class="btn" href="#/p/puls">Puls kursu</a></p></div>
+    <div class="card"><h2>Metodyka projektowania · gr. 3C</h2><p class="muted">24 studentów · kurs w przygotowaniu</p></div>`;
+}
+function viewPOcenianie(){
+  return `<h1>Do oceny</h1><table><thead><tr><th>Student / zespół</th><th>Zadanie</th><th>Oddano</th><th>Status</th></tr></thead><tbody>` +
+    SUBMISSIONS_T.map(s=>`<tr><td><a href="#/p/ocen/${s.id}">${esc(s.student)}</a></td><td>${esc(s.task)}</td><td>${esc(s.when)}</td><td>${S.graded[s.id]?`<span class="badge b-ok">ocenione: ${S.graded[s.id]} pkt</span>`:'<span class="badge b-accent">czeka</span>'}</td></tr>`).join("") + `</tbody></table>`;
+}
+function viewPOcen(id){
+  const s = SUBMISSIONS_T.find(x=>x.id===id); if(!s) return "<h1>Brak pracy</h1>";
+  return `<p class="muted"><a href="#/p/ocenianie">Do oceny</a> › ${esc(s.student)}</p><h1>${esc(s.task)}</h1><p class="muted">${esc(s.student)} · oddano ${esc(s.when)} · 📄 mapa_empatii.pdf</p>
+    <form id="rubricForm" class="card" data-sub="${id}"><h2>Rubryka oceny</h2>
+      ${RUBRIC.map(([n,max],i)=>`<p><label>${esc(n)} (0–${max}): <input type="number" min="0" max="${max}" value="${max-1}" name="r${i}" style="width:5em"></label></p>`).join("")}
+      <p><strong>Suma: <span id="rsum">${RUBRIC.reduce((a,r)=>a+r[1]-1,0)}</span> / 10 pkt</strong></p>
+      <label for="cm">Komentarz dla studenta</label><textarea id="cm">Dobre wglądy w obszarze „bolączki”. Dopisz, co persona słyszy od innych studentów.</textarea>
+      <p><button type="button" id="audioBtn">🎙 Nagraj komentarz głosowy (30 s)</button></p>
+      <p><button class="btn-primary">Zapisz ocenę i wyślij</button></p></form>`;
+}
+function viewPPuls(){
+  const q1 = [["5 – w pełni",14],["4",21],["3",9],["2",3],["1 – wcale",1]], max = 21;
+  return `<h1>Puls kursu – tydzień 4</h1><p class="muted">48 z 58 studentów odpowiedziało · wyniki anonimowe</p>
+    <div class="card"><h2>Zrozumiałość materiału (średnia 3,9 / 5)</h2>${q1.map(([l,n])=>`<div class="bar-row"><span>${l}</span><div class="bar" role="img" aria-label="${l}: ${n} odpowiedzi"><span style="width:${n/max*100}%"></span></div><span>${n}</span></div>`).join("")}</div>
+    <div class="card"><h2>Czas nauki w tygodniu</h2><p>mniej niż 1 h: 8 · 1–3 h: 27 · 3–5 h: 10 · ponad 5 h: 3</p></div>
+    <div class="card"><h2>Co poprawić? (najczęstsze wątki)</h2><ul><li>„Nagranie z ćwiczeń, nie tylko slajdy” – 11 osób</li><li>„Wcześniej podawać termin raportu” – 7 osób</li><li>„Przykład dobrej mapy empatii” – 6 osób</li></ul>
+      <button class="btn-small" onclick="toast('Opublikowano odpowiedź „Co zmieniam po Waszym pulsie” – studenci zobaczą ją na pulpicie.')">Odpowiedz studentom: co zmieniam</button></div>`;
+}
+
+/* ===== Router (hash) ===== */
+function route(){
+  let h = location.hash || "";
+  if(S.role==="teacher" && !h.startsWith("#/p/")) { location.replace("#/p/kursy"); return; }
+  if(S.role==="student" && (h.startsWith("#/p/") || !h)) { location.replace("#/pulpit"); return; }
+  const p = h.slice(2).split("/");
+  const views = {
+    pulpit:()=>viewPulpit(), kursy:()=>viewKursy(), kurs:()=>viewKurs(p[1],p[2]), zadanie:()=>viewZadanie(p[1]),
+    oceny:()=>viewOceny(), powiadomienia:()=>viewPowiadomienia(), mentor:()=>viewMentor(), asystent:()=>viewAsystent(), puls:()=>viewPuls()
+  };
+  const tviews = {kursy:viewPKursy, ocenianie:viewPOcenianie, ocen:()=>viewPOcen(p[2]), puls:viewPPuls};
+  const fn = p[0]==="p" ? tviews[p[1]] : views[p[0]];
+  $("#main").innerHTML = fn ? fn() : "<h1>Nie ma takiej strony</h1>";
+  renderNav(); bindView();
+  const h1 = $("#main h1"); if(h1){ h1.tabIndex=-1; h1.focus({preventScroll:true}); }
+}
+window.addEventListener("hashchange", route);
+
+/* ===== Obsługa zdarzeń w widokach ===== */
+function bindView(){
+  document.querySelectorAll("[data-offline]").forEach(b=>b.onclick=()=>{
+    const k=b.dataset.offline; if(S.offline[k]) delete S.offline[k]; else { S.offline[k]=true; toast("Pobrano lekcję – dostępna bez internetu (wideo + transkrypcja)."); }
+    save(); route();
+  });
+  const ask = $("[data-ask]"); if(ask) ask.onclick=()=>{
+    const v=$("#qaIn").value.trim(); if(!v){ toast("Wpisz treść pytania."); return; }
+    const id=ask.dataset.ask; (S.qa[id]=S.qa[id]||[]).push(v); save(); route(); toast("Pytanie wysłane do prowadzącego.");
+  };
+  const fi = $("#fileIn"); if(fi) fi.onchange=()=>{ $("#fileName").textContent = fi.files[0] ? "Wybrano: "+fi.files[0].name : ""; };
+  const sb = $("#sendBtn"); if(sb) sb.onclick=()=>{
+    const name = (fi && fi.files[0]) ? fi.files[0].name : null;
+    if(!name){ toast("Najpierw wybierz plik."); return; }
+    const pr=$("#upl"); pr.style.display="block"; let v=0; sb.disabled=true;
+    const t=setInterval(()=>{ v+=20; pr.value=v; if(v>=100){ clearInterval(t);
+      const now=new Date(); S.submitted[sb.dataset.task]={file:name,time:`${pad(TODAY.getDate())}.${pad(TODAY.getMonth()+1)} o ${hm(now)}`}; save(); route();
+      toast("✓ Zadanie oddane. Potwierdzenie wysłano na e-mail."); } },200);
+  };
+  document.querySelectorAll('input[name="notif"]').forEach(r=>r.onchange=()=>{ S.notif=r.value; save(); toast("Zapisano ustawienia powiadomień."); });
+  document.querySelectorAll("[data-slot]").forEach(b=>b.onclick=()=>{ S.booked=b.dataset.slot; save(); route(); toast("Umówiono spotkanie z mentorką."); });
+  document.querySelectorAll("[data-faq]").forEach(b=>b.onclick=()=>answer(FAQ[b.dataset.faq].q));
+  const af = $("#askForm"); if(af) af.onsubmit=e=>{ e.preventDefault(); const v=$("#askIn").value.trim(); if(v) answer(v); };
+  const pf = $("#pulseForm"); if(pf) pf.onsubmit=e=>{ e.preventDefault(); const d=new FormData(pf); S.pulse={p1:d.get("p1"),p2:d.get("p2"),p3:d.get("p3")}; save(); route(); };
+  const cb = $("#copyBtn"); if(cb) cb.onclick=()=>{ if(confirm("Skopiować strukturę kursu z semestru zimowego 2025/26? Oceny i odpowiedzi studentów nie zostaną skopiowane.")){ S.copied=true; save(); route(); toast("Kurs skopiowany."); } };
+  const rf = $("#rubricForm"); if(rf){
+    const sum=()=>[...rf.querySelectorAll('input[type=number]')].reduce((a,i)=>a+(+i.value||0),0);
+    rf.oninput=()=>$("#rsum").textContent=sum();
+    $("#audioBtn").onclick=()=>toast("🎙 Nagrano komentarz głosowy (symulacja, 0:24).");
+    rf.onsubmit=e=>{ e.preventDefault(); S.graded[rf.dataset.sub]=sum(); save(); location.hash="#/p/ocenianie"; toast("Ocena zapisana, student dostał powiadomienie."); };
+  }
+}
+function answer(q){
+  const l=q.toLowerCase(); const f=FAQ.find(x=>x.k.some(k=>l.includes(k)));
+  S.chat = (S.chat.length?S.chat:[["bot","Cześć! Odpowiadam na pytania o organizację studiów."]]);
+  S.chat.push(["me",q]);
+  S.chat.push(["bot", f ? f.a : "Nie znam jeszcze odpowiedzi. Przekazałam pytanie do dziekanatu – odpowiedź pojawi się tutaj i w powiadomieniach (zwykle w 1 dzień roboczy)."]);
+  save(); route(); const c=$("#chat"); if(c) c.scrollTop=c.scrollHeight;
+}
+
+/* ===== Przełączniki: wariant, rola, telefon, reset ===== */
+function syncControls(){
+  document.querySelectorAll("[data-variant]").forEach(b=>b.setAttribute("aria-pressed", b.dataset.variant===S.variant));
+  document.querySelectorAll("[data-role]").forEach(b=>b.setAttribute("aria-pressed", b.dataset.role===S.role));
+  $("#phoneBtn").setAttribute("aria-pressed", S.phone);
+  document.body.classList.toggle("phone", S.phone);
+  $("#app").classList.toggle("compact", S.phone || window.innerWidth < 760);
+  $("#tpVariant").textContent = " · wariant " + S.variant;
+}
+document.querySelectorAll("[data-variant]").forEach(b=>b.onclick=()=>{ S.variant=b.dataset.variant; save(); syncControls(); route(); });
+document.querySelectorAll("[data-role]").forEach(b=>b.onclick=()=>{ S.role=b.dataset.role; save(); syncControls(); location.hash = S.role==="student" ? "#/pulpit" : "#/p/kursy"; route(); });
+$("#phoneBtn").onclick=()=>{ S.phone=!S.phone; save(); syncControls(); };
+$("#resetBtn").onclick=()=>{ if(confirm("Przywrócić dane prototypu do stanu początkowego?")){ const keep={variant:S.variant,role:S.role,phone:S.phone}; S=Object.assign(defaultState(),keep); save(); route(); toast("Dane zresetowane."); } };
+window.addEventListener("resize", syncControls);
+
+/* ===== Panel testowy: zadania T1–T5, pomiar czasu, eksport CSV ===== */
+const TESTS = [
+  ["T1","Sprawdź, co masz do oddania w tym tygodniu"],
+  ["T2","Oddaj zadanie z Baz danych"],
+  ["T3","Znajdź mikrolekcję z tygodnia 3 DT i pobierz ją offline"],
+  ["T4","Sprawdź, ile punktów brakuje do zaliczenia Sieci"],
+  ["T5","Zadaj pytanie o termin poprawki"]
+];
+const running = {}; let tick = null;
+function renderTests(){
+  $("#tasks").innerHTML = TESTS.map(([id,txt])=>{
+    const r = running[id];
+    const done = RESULTS.filter(x=>x.zadanie===id && x.uczestnik===$("#participant").value && x.wariant===S.variant).slice(-1)[0];
+    return `<div class="trow"><strong>${id}</strong> ${esc(txt)}<div class="acts">
+      ${r ? `<span class="timer" id="tm-${id}">0 s</span><button class="btn-small" data-stop="${id}" data-ok="1">✓ Sukces</button><button class="btn-small" data-stop="${id}" data-ok="0">✗ Porażka</button>`
+          : `<button class="btn-small" data-start="${id}">▶ Start</button>`}
+      ${done?`<span class="muted">ostatnio: ${done.czas_s} s, ${done.sukces?"sukces":"porażka"}</span>`:""}</div></div>`;
+  }).join("");
+  $("#tpCount").textContent = `Zapisanych pomiarów: ${RESULTS.length}`;
+  document.querySelectorAll("[data-start]").forEach(b=>b.onclick=()=>{ running[b.dataset.start]=Date.now(); renderTests(); });
+  document.querySelectorAll("[data-stop]").forEach(b=>b.onclick=()=>{
+    const id=b.dataset.stop, s=((Date.now()-running[id])/1000).toFixed(1); delete running[id];
+    RESULTS.push({uczestnik:$("#participant").value.trim()||"U?",wariant:S.variant,zadanie:id,czas_s:s,sukces:b.dataset.ok==="1"?1:0});
+    localStorage.setItem(RKEY, JSON.stringify(RESULTS)); renderTests();
+  });
+}
+tick = setInterval(()=>{ for(const id in running){ const el=document.getElementById("tm-"+id); if(el) el.textContent=Math.round((Date.now()-running[id])/1000)+" s"; } },500);
+$("#participant").onchange = renderTests;
+$("#exportCsv").onclick=()=>{
+  if(!RESULTS.length){ toast("Brak wyników do eksportu."); return; }
+  const csv = "uczestnik,wariant,zadanie,czas_s,sukces\n" + RESULTS.map(r=>[r.uczestnik,r.wariant,r.zadanie,r.czas_s,r.sukces].map(v=>/[",\n]/.test(String(v))?`"${String(v).replace(/"/g,'""')}"`:v).join(",")).join("\n");
+  download("wyniki_testow_kampusplus.csv", csv);
+};
+$("#clearRes").onclick=()=>{ if(confirm("Usunąć wszystkie zapisane pomiary?")){ RESULTS=[]; localStorage.setItem(RKEY,"[]"); renderTests(); } };
+
+/* ===== Start ===== */
+syncControls(); renderTests(); route();
+</script>
+</body>
+</html>

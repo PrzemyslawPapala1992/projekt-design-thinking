@@ -1,0 +1,31 @@
+id,pomysl,kierunek,technika,glosy,wplyw,wysilek
+1,Pulpit "Co dziś / ten tydzień" - jedna oś terminów ze wszystkich kursów,A,burza mózgów,8,9,4
+2,Eksport terminów do kalendarza w telefonie (iCal/Google/Outlook),A,analogia,5,7,2
+3,Jednolity szablon kursu: sylabus - tygodnie - zadania - oceny - Q&A,B,TRIZ lokalnej jakości,7,9,4
+4,Kopiowanie kursu z poprzedniego semestru z automatycznym przesunięciem dat,F,TRIZ samoobsługi,6,8,3
+5,Inteligentne powiadomienia: dzienne podsumowanie + push tylko <48 h przed terminem,A,TRIZ działań impulsowych,6,8,3
+6,Mikrolekcje 5-10 min zamiast nagrań 90 min,C,TRIZ segmentacji,6,8,6
+7,Automatyczne transkrypcje i napisy do nagrań,C,kwiat lotosu,4,7,3
+8,Tryb offline i aplikacja mobilna (PWA),C,kwiat lotosu,5,8,6
+9,Panel postępu z przewidywaną oceną i progiem zaliczenia,D,635,7,8,4
+10,Rubryki ocen i komentarze audio do zadań,D,brainwriting,4,7,3
+11,Automatycznie sprawdzane quizy po mikrolekcji,D,analogia (Duolingo),3,6,4
+12,Potwierdzenie oddania zadania z godziną i sumą kontrolną,D,5 WHY,3,6,1
+13,Forum Q&A kursu z oznaczaniem odpowiedzi prowadzącego,E,burza mózgów,3,6,2
+14,Asystent FAQ dziekanatu 24/7 (PL/EN),E,kwiat lotosu,4,7,5
+15,Mentor rówieśniczy ze starszego roku (peer mentoring),E,analogia (5 steps elective),5,7,4
+16,Interfejs dwujęzyczny PL/EN,E,mapa empatii (Erasmus),2,5,3
+17,Anonimowy cotygodniowy puls kursu (3 pytania),G,TRIZ sprzężenia zwrotnego,4,7,2
+18,Panel jakości dla prowadzącego (co studenci rozumieją / nie),G,3-12-3,2,6,5
+19,Pojedyncze logowanie SSO i integracja z USOS (oceny),A,mapa kontekstowa,4,8,8
+20,Grywalizacja: odznaki i punkty doświadczenia,H,analogia (gry),2,4,4
+21,Portfolio studenta z projektami dla firm,H,case study 3,2,5,6
+22,Projekty semestralne zlecane przez firmy partnerskie,H,case study 3,3,6,8
+23,Odznaki kompetencji (mikropoświadczenia),H,mapa kontekstowa,1,4,6
+24,Bank pytań i współdzielenie materiałów między prowadzącymi,F,kwiat lotosu,2,6,5
+25,Asystent AI do streszczania wykładów i fiszek,C,myślenie lateralne,3,6,7
+26,Obrona ustna 5 min zamiast monitoringu antyplagiatowego,D,TRIZ wykonania na odwrót,2,6,3
+27,Grupy projektowe z kanałem czatu wewnątrz kursu,E,burza mózgów,2,5,3
+28,Wirtualny spacer / VR laboratoria,H,myślenie lateralne,1,3,9
+29,Tryb skupienia (blokada powiadomień w trakcie nauki),C,TRIZ przeciwdziałania,1,3,2
+30,Kalendarz konsultacji z rezerwacją slotów,E,analogia (Booksy),3,6,2

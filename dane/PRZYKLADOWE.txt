@@ -1,0 +1,2 @@
+Dane w tym folderze (ankieta, testy, SUS, głosy i oceny pomysłów) są PRZYKŁADOWE.
+Po wpisaniu prawdziwych wyników usuń ten plik – zniknie znak wodny z wykresów.

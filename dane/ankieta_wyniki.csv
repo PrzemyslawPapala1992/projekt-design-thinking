@@ -1,0 +1,41 @@
+tryb,rok,liczba_systemow,przegapiony_termin,ocena_dostepu_info,ocena_materialow,ocena_mobile,ocena_feedback,ocena_komunikacji,chce_jedna_platforma,chce_mikrolekcje,chce_mentor,najwiekszy_problem
+niestacjonarne,3,4,tak,2,2,3,1,3,5,4,3,za dużo haseł i systemów
+niestacjonarne,2,5,nie,2,2,1,2,3,4,4,4,"nie wiem, ile mam punktów"
+niestacjonarne,5,4,nie,2,3,3,3,2,5,5,4,za dużo haseł i systemów
+stacjonarne,5,5,tak,2,4,2,2,2,5,5,3,"nie wiem, ile mam punktów"
+stacjonarne,1,4,nie,1,2,3,2,3,4,4,4,terminy w różnych miejscach
+niestacjonarne,3,5,nie,1,3,4,2,4,4,2,4,brak informacji zwrotnej
+stacjonarne,5,6,nie,3,2,3,3,3,5,4,2,długie nagrania
+niestacjonarne,5,2,tak,1,1,1,2,3,4,2,3,"nie wiem, ile mam punktów"
+niestacjonarne,4,4,nie,3,4,1,1,4,4,3,4,terminy w różnych miejscach
+stacjonarne,4,4,tak,1,3,3,2,2,5,5,4,długie nagrania
+stacjonarne,1,3,tak,3,3,1,1,2,5,5,2,"nie wiem, ile mam punktów"
+stacjonarne,4,3,nie,2,2,2,1,1,4,4,5,brak informacji zwrotnej
+stacjonarne,3,2,nie,3,3,3,2,4,4,2,4,terminy w różnych miejscach
+stacjonarne,1,4,nie,2,2,1,4,4,3,4,5,"nie wiem, ile mam punktów"
+stacjonarne,2,6,tak,1,3,1,2,4,5,3,3,długie nagrania
+niestacjonarne,3,2,nie,3,2,2,1,3,3,5,3,"nie wiem, ile mam punktów"
+wymiana,4,4,tak,4,2,2,2,3,3,5,2,brak informacji zwrotnej
+niestacjonarne,3,6,tak,2,4,2,3,3,5,4,5,brak informacji zwrotnej
+niestacjonarne,4,6,tak,2,2,2,3,2,4,3,3,długie nagrania
+wymiana,5,3,tak,2,3,1,2,3,5,3,5,długie nagrania
+stacjonarne,4,2,nie,1,3,1,2,3,5,4,3,terminy w różnych miejscach
+stacjonarne,2,5,nie,3,3,2,2,4,5,4,4,brak informacji zwrotnej
+niestacjonarne,4,2,nie,2,2,1,3,3,5,3,2,brak wersji na telefon
+stacjonarne,3,3,nie,2,3,1,3,3,5,4,3,długie nagrania
+stacjonarne,1,4,nie,2,3,2,3,2,4,3,4,brak wersji na telefon
+stacjonarne,1,6,tak,2,3,2,1,2,4,5,2,"nie wiem, ile mam punktów"
+stacjonarne,4,2,nie,1,3,2,3,4,3,5,4,za dużo haseł i systemów
+wymiana,2,5,nie,3,4,1,2,3,4,5,4,długie nagrania
+niestacjonarne,3,4,tak,2,4,1,3,3,5,4,2,długie nagrania
+stacjonarne,2,2,nie,3,3,1,1,2,5,4,3,długie nagrania
+stacjonarne,2,6,nie,2,2,1,2,2,4,4,3,terminy w różnych miejscach
+stacjonarne,1,6,nie,2,2,2,2,3,4,4,3,"nie wiem, ile mam punktów"
+stacjonarne,2,4,tak,2,4,1,1,3,4,4,3,za dużo haseł i systemów
+stacjonarne,5,6,nie,2,4,2,4,2,5,3,3,brak informacji zwrotnej
+niestacjonarne,3,5,tak,2,3,2,4,2,4,3,3,terminy w różnych miejscach
+stacjonarne,2,6,nie,2,3,4,2,3,5,5,2,długie nagrania
+stacjonarne,3,6,nie,2,4,1,3,3,5,4,2,terminy w różnych miejscach
+stacjonarne,5,4,tak,1,4,3,3,1,4,4,3,"nie wiem, ile mam punktów"
+niestacjonarne,2,3,nie,2,4,2,1,2,4,5,4,"nie wiem, ile mam punktów"
+stacjonarne,3,2,nie,4,2,2,3,2,5,2,2,długie nagrania
